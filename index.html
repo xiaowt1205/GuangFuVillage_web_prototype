@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+        }
+
+        .canvas {
+            width: 100%;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        .pos_center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .fix_style {
+            border: 2px solid red;
+        }
+
+        .screen {
+            width: 486px;
+            height: 648px;
+            background-color: gray;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .nav {
+            width: 100%;
+            height: 12%;
+            background-color: sandybrown;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav .tab_btn {
+            width: 70%;
+            height: 100%;
+            background-color: wheat;
+            cursor: pointer;
+            transition: .3s;
+            color: black;
+        }
+
+        .tab_btn:hover {
+            color: rgb(255, 136, 0);
+        }
+
+        .nav .tab_btn:nth-child(2) {
+            width: 100%;
+            margin: 0 10px;
+        }
+
+        .tab_btn.active {
+            background-color: rgb(255, 136, 0);
+            color: white;
+        }
+
+        .map {
+            width: 100%;
+            height: calc(100% - 12%);
+            position: relative;
+        }
+
+        .map .mask {
+            width: 100%;
+            height: calc(100%);
+            background-color: rgba(128, 128, 128, 0.3);
+            position: absolute;
+            top: 0;
+            left: 0;
+            text-align: center;
+            font-size: 24px;
+            color: white;
+            z-index: 1;
+        }
+
+        .tab_content_group {
+            width: 100%;
+            height: calc(100% - 12%);
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .tab_content {
+            width: 100%;
+            height: 100%;
+            background-color: rgb(255, 192, 119);
+            overflow-x: hidden;
+
+            position: absolute;
+            top: 0;
+            z-index: 4;
+            transition: .8s;
+        }
+
+        .tab_content.active {
+            left: 0 !important;
+        }
+
+        .tab_content:nth-child(1) {
+            left: -160%;
+        }
+
+        .tab_content:nth-child(2) {
+            left: 160%;
+        }
+
+        .tab_content h2 {
+            text-align: center;
+            letter-spacing: 5px;
+        }
+
+        .tab_content .container {
+            width: calc(80% + 10%);
+            margin: auto;
+            padding: 0% 5% 6% 5%;
+        }
+
+        .tab_content .item {
+            width: 100%;
+            min-height: 120px;
+            border-radius: 3px;
+            border: 3px solid rgba(166, 43, 43, 0.2);
+            background-color: rgba(218, 128, 128, 0.2);
+            display: flex;
+            cursor: pointer;
+            transition: .3s;
+            margin-bottom: 6%;
+        }
+
+        .tab_content .item:last-child {
+            margin-bottom: 0;
+        }
+
+        .tab_content .item:hover {
+            border: 3px solid rgba(166, 43, 43, 0.8);
+        }
+
+        .tab_content .item .img {
+            min-width: 40%;
+            height: 120px;
+            background-image: url('https://f.share.photo.xuite.net/siba39/1fe1768/11499648/539667688_l.jpg');
+            background-position: center;
+            background-size: cover;
+        }
+
+        .tab_content .item .text {
+            padding: 10px 20px;
+        }
+
+        .tab_content .item .text h3 {
+            margin: 0px 0px 5px 0px;
+        }
+
+        .modal{
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -3;
+            opacity: 0;
+            transition: opacity .5s;
+            padding: 10% 5% 5%;
+            overflow-x: hidden;
+            background-color: rgba(128, 128, 128, 0.3);
+        }
+
+        .modal.active {
+            opacity: 1;
+            z-index: 4;
+        }
+
+        .modal-info{
+            height: calc(100% - 12%);
+            background-color: rgba(255, 185, 127, 0.9);
+        }
+
+        .modal-info .cancel {
+            position: absolute;
+            top: 0px;
+            right: 25px;
+            font-size: 36px;
+            font-weight: 900;
+            cursor: pointer;
+            color: white;
+            transition: .4s;
+            transform: scaleY(0.8);
+        }
+
+        .cancel:hover {
+            color: black;
+        }
+
+        .modal-info .img {
+            width: 100%;
+            min-height: 250px;
+            background-image: url('https://i.epochtimes.com/assets/uploads/2020/07/e23bd596faecfe20401d1af5de1d28ed.jpg');
+            background-position: center;
+            background-size: cover;
+        }
+
+        .modal-info h2 {
+            text-align: center;
+        }
+
+        .modal-info span {
+            line-height: 25px;
+        }
+
+        .event {
+            position: absolute;
+            top: 10%;
+            right: 10px;
+            z-index: 2;
+            padding: 10px 20px;
+            background-color: red;
+            cursor: pointer;
+            color: white;
+        }
+
+        .text-box{
+            width: 80%;
+            min-height: 275px;
+            background-color: rgb(255, 164, 89);
+            transform: translateY(-40%);
+            padding: 5% 5% 5%;
+            position: relative;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .text-box .cancel{
+            position: absolute;
+            top: 0px;
+            right: 10px;
+            font-size: 36px;
+            font-weight: 900;
+            cursor: pointer;
+            color: white;
+            transition: .4s;
+            transform: scaleY(0.8);
+        }
+
+        .text-box h2 span{
+            color: red;
+        }
+
+        .text-box h2~p{
+            margin: -10px 0 25px 0;
+        }
+
+        .text-box .camera{
+            width: 115px;
+            height: 115px;
+            border-radius: 6px;
+            background-color: rgb(255, 141, 48);
+            margin: auto;
+            cursor: pointer;
+        }
+
+        .text-box .camera i{
+            font-size: 60px;
+            color: white;
+        }
+
+        .screen .ar_camera{
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 99;
+            background-color: gray;
+            font-size: 40px;
+            display: none;
+        }
+
+        .ar_camera .cancel{
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 16px;
+            padding: 10px 20px;
+            background-color: indianred;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="canvas pos_center">
+        <div class="screen">
+            <div class="nav">
+                <div class="tab_btn btn pos_center">關於光復</div>
+                <div class="tab_btn pos_center map_btn" onclick="clearActive()">導覽地圖</div>
+                <div class="tab_btn btn pos_center">景點蒐藏</div>
+            </div>
+            <div class="tab_content_group">
+                <div class="tab_content">
+                    <h2>關於光復</h2>
+                    <div class="container"></div>
+
+                </div>
+                <div class="tab_content">
+                    <h2>景點蒐藏</h2>
+                    <div class="container">
+                        <div class="item">
+                            <div class="img"></div>
+                            <div class="text">
+                                <h3>公車站</h3>
+                                <span>簡介文字簡介文字簡介文字簡介文字簡介文字簡介</span>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="img"></div>
+                            <div class="text">
+                                <h3>公車站</h3>
+                                <span>簡介文字簡介文字簡介文字簡介文字簡介文字簡介</span>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="img"></div>
+                            <div class="text">
+                                <h3>公車站</h3>
+                                <span>簡介文字簡介文字簡介文字簡介文字簡介文字簡介</span>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="img"></div>
+                            <div class="text">
+                                <h3>公車站</h3>
+                                <span>簡介文字簡介文字簡介文字簡介文字簡介文字簡介</span>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="img"></div>
+                            <div class="text">
+                                <h3>公車站</h3>
+                                <span>簡介文字簡介文字簡介文字簡介文字簡介文字簡介</span>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="img"></div>
+                            <div class="text">
+                                <h3>公車站</h3>
+                                <span>簡介文字簡介文字簡介文字簡介文字簡介文字簡介</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="map">
+                <div class="event">如果靠近導覽點的時候(按我一下)</div>
+                <div class="mask pos_center"></div>
+                <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3640.6040232059663!2d120.68091201498895!3d24.150540534393613!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x34693d68cf62e061%3A0x7091dd73273f6236!2z5ZyL56uL6Ie65Lit56eR5oqA5aSn5a24!5e0!3m2!1szh-TW!2stw!4v1606979212478!5m2!1szh-TW!2stw"
+                    width="100%" height="100%" frameborder="0" style="border:0;" allowfullscreen="" aria-hidden="false"
+                    tabindex="0"></iframe>
+            </div>
+
+            <div class="modal modal-info">
+                <div class="cancel">X</div>
+                <div class="img"></div>
+                <h2>公車站</h2>
+                <span>詳細介紹詳細介紹詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細介紹文字詳細</span>
+            </div>
+
+            <div class="modal modal-notif pos_center">
+                <div class="text-box">
+                    <div class="cancel">X</div>
+                    <h2>已發現檢查點<span>公車站</span></h2>
+                    <p>快點開啟AR相機吧</p>
+                    <div class="camera pos_center">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ar_camera pos_center">
+                相機畫面
+                <div class="cancel">返回地圖</div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        var btn = document.querySelectorAll('.btn')
+        var map_btn = document.querySelector(".map_btn")
+        var content = document.querySelectorAll('.tab_content')
+        var item = document.querySelectorAll('.item')
+        var info = document.querySelector('.modal-info')
+        var can_1 = document.querySelector('.modal-info .cancel')
+        var can_2 = document.querySelector('.modal-notif .cancel')
+        var can_3 = document.querySelector('.ar_camera .cancel')
+        var event = document.querySelector('.event')
+        var modal_notif = document.querySelector('.modal-notif')
+        var camera = document.querySelector('.camera')
+        var ar_camera = document.querySelector('.ar_camera')
+
+        btn.forEach(function (item, index) {
+            item.onclick = function () {
+                clearActive()   
+                map_btn.classList.remove("active")
+                btn[index].classList.toggle('active')
+                content[index].classList.toggle('active')
+            }
+        });
+
+        function clearActive() {
+            for (let index = 0; index < content.length; index++) {
+                map_btn.classList.add("active")
+                content[index].classList.remove('active')
+                btn[index].classList.remove('active')
+                info.classList.remove('active')
+            }
+        }
+
+        item.forEach(element => {
+            element.onclick = function () {
+                info.classList.add('active')
+            }
+        });
+
+        can_1.onclick = function () {
+            info.classList.remove('active')
+        }
+
+        can_2.onclick = function () {
+            modal_notif.classList.remove('active')
+            event.style.display ="block"
+        }
+
+        event.onclick = function(){
+            modal_notif.classList.add('active')
+            event.style.display ="none"
+        }
+
+        camera.onclick = function(){
+            ar_camera.style.display ="flex"
+        }
+
+        can_3.onclick = function () {
+            ar_camera.style.display = "none"
+        }
+    </script>
+</body>
+
+</html>
